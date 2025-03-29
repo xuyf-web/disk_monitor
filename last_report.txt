@@ -1,0 +1,52 @@
+Disk Usage Report for 2025-03-29:
+
+== 数据分区 (/data8/xuyf) ==
++------------+----------+------------+
+| Directory  |     Size | Percentage |
++------------+----------+------------+
+| data       |   3.31 T |     66.24% |
+| Project    | 107.01 G |      2.09% |
+| Base_Model |  12.63 G |      0.25% |
+| anaconda3  |   9.86 G |      0.19% |
+| tarfile    |   8.29 G |      0.16% |
+| Archive    |   1.70 G |      0.03% |
+| soft       |  95.30 M |      0.00% |
++------------+----------+------------+
+
+Total Size: 3.45 T
+Disk Capacity: 5.00 T
+Usage Percentage: 68.97%
+
+== 用户主目录 (/home2/xuyf) ==
++------------------+----------+------------+
+| Directory        |     Size | Percentage |
++------------------+----------+------------+
+| .cursor-server   | 620.95 M |     12.13% |
+| .windsurf-server | 336.07 M |      6.56% |
+| .vscode-server   | 190.14 M |      3.71% |
+| .local           |  58.30 M |      1.14% |
+| .cache           |  43.41 M |      0.85% |
+| .wakatime        |  15.53 M |      0.30% |
+| .mozilla         |  14.49 M |      0.28% |
+| .ipython         |   7.52 M |      0.15% |
+| .dotnet          | 166.35 K |      0.00% |
+| .config          |  43.22 K |      0.00% |
+| .subversion      |  20.73 K |      0.00% |
+| .dbus            |  20.42 K |      0.00% |
+| .ssh             |   5.43 K |      0.00% |
+| .gk              | 535.00 B |      0.00% |
+| .vim             | 140.00 B |      0.00% |
+| .conda           | 122.00 B |      0.00% |
+| Documents        |  42.00 B |      0.00% |
+| .lsbatch         |   6.00 B |      0.00% |
++------------------+----------+------------+
+
+Total Size: 1.26 G
+Disk Capacity: 5.00 G
+Usage Percentage: 25.13%
+
+
+请注意：
+- 使用率超过阈值时将收到警告
+- 报告每周自动生成
+- 如有异常请联系系统管理员

@@ -1,0 +1,2 @@
+# 每周一10:00运行磁盘监控脚本
+0 10 * * 1 cd /data8/xuyf/soft/disk_monitor && python3 send_disk_usage.py >> /data8/xuyf/soft/disk_monitor/cron.log 2>&1
