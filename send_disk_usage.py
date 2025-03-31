@@ -65,6 +65,7 @@ def convert_to_html(text):
     table_rows = []  # 表格行
     headers = []  # 表头
     summary_lines = []  # 摘要文本
+    table_data_started = False  # 判断表格数据是否已经开始
     
     # 处理每一行
     i = 1  # 从第二行开始（跳过标题）
@@ -80,6 +81,21 @@ def convert_to_html(text):
         if line.startswith("==") and line.endswith("=="):
             # 如果正在处理一个区域，先结束它
             if in_section:
+                # 如果仍在表格中，先完成表格
+                if in_table:
+                    # 添加表格数据
+                    for row_data in table_rows:
+                        html += '<tr>\n'
+                        for j, cell in enumerate(row_data):
+                            if j == 0:  # 目录名
+                                html += f'<td>{cell}</td>\n'
+                            else:  # 大小和百分比（右对齐）
+                                html += f'<td align="right">{cell}</td>\n'
+                        html += '</tr>\n'
+                    
+                    html += '</table>\n'
+                    in_table = False
+                
                 # 添加之前区域的摘要信息
                 if summary_lines:
                     html += '<div class="summary">\n'
@@ -101,26 +117,31 @@ def convert_to_html(text):
             table_rows = []
             headers = []
             summary_lines = []
+            table_data_started = False
             i += 1
             continue
         
-        # 检测表格边框
-        if line.startswith("+--") and "-+" in line:
+        # 检测表格开始（包括边界和标题行）
+        if (line.startswith("+--") and "-+" in line) or ("|" in line and not in_table and table_data_started == False):
             if not in_table:
                 # 表格开始
                 in_table = True
-                i += 1
                 
-                # 获取表头
-                if i < len(lines):
-                    header_line = lines[i].strip()
-                    if "|" in header_line:
+                # 如果这一行是表头行而不是表格边界
+                if "|" in line and not line.startswith("+--"):
+                    headers = [h.strip() for h in line.split('|') if h.strip()]
+                    i += 1
+                else:
+                    # 这是表格边界，读取下一行作为表头
+                    i += 1
+                    if i < len(lines) and "|" in lines[i]:
+                        header_line = lines[i].strip()
                         headers = [h.strip() for h in header_line.split('|') if h.strip()]
                         i += 1
-                    
-                    # 跳过表头下方的分隔行
-                    if i < len(lines) and lines[i].strip().startswith("+--"):
-                        i += 1
+                        
+                        # 跳过表头下方的分隔行
+                        if i < len(lines) and lines[i].strip().startswith("+--"):
+                            i += 1
                 
                 # 开始构建表格
                 if headers:
@@ -128,32 +149,61 @@ def convert_to_html(text):
                     for header in headers:
                         html += f'<th>{header}</th>\n'
                     html += '</tr>\n'
-            else:
-                # 表格结束
-                in_table = False
                 
-                # 添加表格数据
-                for row_data in table_rows:
-                    html += '<tr>\n'
-                    for j, cell in enumerate(row_data):
-                        if j == 0:  # 目录名
-                            html += f'<td>{cell}</td>\n'
-                        else:  # 大小和百分比（右对齐）
-                            html += f'<td align="right">{cell}</td>\n'
-                    html += '</tr>\n'
-                
-                html += '</table>\n'
-                table_rows = []
-                i += 1
+                table_data_started = True
                 continue
+            else:
+                # 检查是否是表格结束
+                if line.startswith("+--") and "-+" in line:
+                    # 当前行是表格边界，结束当前表格
+                    in_table = False
+                    
+                    # 添加表格数据
+                    for row_data in table_rows:
+                        html += '<tr>\n'
+                        for j, cell in enumerate(row_data):
+                            if j == 0:  # 目录名
+                                html += f'<td>{cell}</td>\n'
+                            else:  # 大小和百分比（右对齐）
+                                html += f'<td align="right">{cell}</td>\n'
+                        html += '</tr>\n'
+                    
+                    html += '</table>\n'
+                    table_rows = []
+                    table_data_started = False
+                    i += 1
+                    continue
         
         # 处理表格数据行
         if in_table and "|" in line:
-            cells = [cell.strip() for cell in line.split('|') if cell.strip()]
-            if cells:
-                table_rows.append(cells)
+            # 确保不把表头再次当做数据处理
+            if headers and not any(header in line for header in headers):
+                cells = [cell.strip() for cell in line.split('|') if cell.strip()]
+                if cells:
+                    table_rows.append(cells)
             i += 1
             continue
+        
+        # 检测是否表格已经结束（没有表格边界但可能已经转到其他内容）
+        if in_table and not ("|" in line or line.startswith("+--")):
+            # 这可能是表格结束后的内容，结束表格
+            in_table = False
+            
+            # 添加表格数据
+            for row_data in table_rows:
+                html += '<tr>\n'
+                for j, cell in enumerate(row_data):
+                    if j == 0:  # 目录名
+                        html += f'<td>{cell}</td>\n'
+                    else:  # 大小和百分比（右对齐）
+                        html += f'<td align="right">{cell}</td>\n'
+                html += '</tr>\n'
+            
+            html += '</table>\n'
+            table_rows = []
+            table_data_started = False
+            
+            # 不增加i，因为当前行需要作为摘要处理
         
         # 处理摘要信息
         if in_section and not in_table:
@@ -169,6 +219,20 @@ def convert_to_html(text):
     
     # 处理最后一个区域
     if in_section:
+        # 如果仍在表格中，先完成表格
+        if in_table:
+            # 添加表格数据
+            for row_data in table_rows:
+                html += '<tr>\n'
+                for j, cell in enumerate(row_data):
+                    if j == 0:  # 目录名
+                        html += f'<td>{cell}</td>\n'
+                    else:  # 大小和百分比（右对齐）
+                        html += f'<td align="right">{cell}</td>\n'
+                html += '</tr>\n'
+            
+            html += '</table>\n'
+        
         # 添加摘要信息
         if summary_lines:
             html += '<div class="summary">\n'
