@@ -18,3 +18,7 @@ ENV/
 # IDE相关
 .idea/
 .vscode/ 
+
+# 忽略运行结果
+*.txt
+*.html
